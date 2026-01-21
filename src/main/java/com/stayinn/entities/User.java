@@ -26,6 +26,7 @@ public class User extends BaseEntity{
 	    private String password; // BCrypt encoded
 	    private String name;
 	    private String mobile;
+	    private Boolean active;
 	    
 	    @Enumerated(EnumType.STRING)
 	    private Role role; // ADMIN, USER
@@ -35,5 +36,7 @@ public class User extends BaseEntity{
 
 	    @OneToMany(mappedBy = "user")
 	    private List<Rating> ratings; // History of ratings given by this user
+	    
+	    
 	}
 	

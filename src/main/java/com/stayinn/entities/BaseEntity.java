@@ -10,12 +10,14 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @MappedSuperclass
 @RequiredArgsConstructor
-
-
+@Getter
+@Setter
 public class BaseEntity {
 	
 	@Id

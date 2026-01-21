@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Data
@@ -31,7 +30,7 @@ public class RegistrationDTO {
 	@Pattern(regexp = "^[0-9]{10,15}$", message = "Phone number must be 10-15 digits")
 	private String mobile;
 	
+//	private Boolean active;
+	
 	private Role role;
-	
-	
 }
