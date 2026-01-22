@@ -18,13 +18,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.stayinn.dto.PasswordChangeDTO;
-import com.stayinn.dto.UserProfileDTO;
-import com.stayinn.dto.UserResponseDTO;
-import com.stayinn.dto.UserUpdateDTO;
 import com.stayinn.entities.Role;
 import com.stayinn.service.UserService;
 import com.stayinn.dto.*;
+import com.stayinn.dto.User.UserProfileDTO;
+import com.stayinn.dto.User.UserResponseDTO;
+import com.stayinn.dto.User.UserUpdateDTO;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

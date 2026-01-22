@@ -9,9 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.stayinn.dto.PasswordChangeDTO;
 import com.stayinn.dto.RegistrationDTO;
-import com.stayinn.dto.UserProfileDTO;
-import com.stayinn.dto.UserResponseDTO;
-import com.stayinn.dto.UserUpdateDTO;
+import com.stayinn.dto.User.UserProfileDTO;
+import com.stayinn.dto.User.UserResponseDTO;
+import com.stayinn.dto.User.UserUpdateDTO;
 import com.stayinn.entities.Role;
 import com.stayinn.entities.User;
 import com.stayinn.repository.UserRepository;

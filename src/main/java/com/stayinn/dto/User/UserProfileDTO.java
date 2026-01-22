@@ -1,4 +1,4 @@
-package com.stayinn.dto;
+package com.stayinn.dto.User;
 
 import java.time.LocalDateTime;
 

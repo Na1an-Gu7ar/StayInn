@@ -1,4 +1,4 @@
-package com.stayinn.dto;
+package com.stayinn.dto.User;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
