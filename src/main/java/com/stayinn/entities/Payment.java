@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -23,6 +25,12 @@ public class Payment extends BaseEntity {
     private Double amount;
     private LocalDate paymentDate;
     private String paymentMethod; // e.g., "CREDIT_CARD", "PAYPAL"
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private PaymentStatus status = PaymentStatus.PENDING;
+
+    private String transactionId; // Payment gateway transaction ID
+    private String paymentGateway; // e.g., "STRIPE", "RAZORPAY", "PAYPAL"
 
     @OneToOne
     @JoinColumn(name = "booking_id")
