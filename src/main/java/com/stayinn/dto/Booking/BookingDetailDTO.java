@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.stayinn.entities.BookingStatus;
+import com.stayinn.entities.PaymentStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
