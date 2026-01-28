@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Box, TextField, Button, Typography, CircularProgress, Paper, useMediaQuery, useTheme } from '@mui/material';
 import CustomizedSnackbars from '../components/Snackbar';
 import { motion } from "framer-motion"
@@ -12,17 +13,23 @@ export default function Login() {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
+    // Use login from context
+    const { login } = useAuth(); // ADDED
+
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleSubmit = async e => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            await login(form);
             setSnackbar({ open: true, message: 'Logged in successfully!', severity: 'success' });
             setTimeout(() => navigate('/'), 1500);
-        }, 1500);
+        } catch (error) {
+            setSnackbar({ open: true, message: error.message || 'Login failed', severity: 'error' });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

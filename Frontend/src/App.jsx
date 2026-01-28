@@ -29,11 +29,30 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+
+        {/* Redirect unknown routes to Login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+
         <Route path="/" element={<Navbar />}>
           <Route index element={<Landing />} />
-          <Route path="/listings" element={<ListingsPage />} />
-          <Route path="/listings/:id" element={<HotelDetails />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/listings"
+            element={
+              <ProtectedRoute>
+                <ListingsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/listings/:id"
+            element={
+              <ProtectedRoute>
+                <HotelDetails />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Admin Protected Route */}
           <Route

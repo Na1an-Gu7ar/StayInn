@@ -1,22 +1,39 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { Box, TextField, Button, Typography, Paper, MenuItem, useTheme } from '@mui/material';
 import { motion } from "framer-motion"
 
 const roles = ['normal_user', 'store_owner'];
 
 export default function SignUp() {
-    const [form, setForm] = useState({ name: '', email: '', address: '', password: '', role: 'normal_user' });
+    const [form, setForm] = useState({ name: '', email: '', mobile: '', password: '', role: 'normal_user' });
     const theme = useTheme();
-    const navigate = useNavigate();
+    // Use register from context
+    const { register } = useAuth(); // ADDED
+    const [loading, setLoading] = useState(false);
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
     const handleSubmit = async e => {
         e.preventDefault();
-        // Mock signup
-        alert('Signup successful! Please log in.');
-        navigate('/login');
+        console.log(form.role);
+        setLoading(true);
+        // Map frontend role to backend role
+        const backendRole = form.role === 'store_owner' ? 'ADMIN' : 'USER';
+
+        try {
+            await register({
+                ...form,
+                role: backendRole
+            });
+            alert('Signup successful! Please log in.');
+            navigate('/login');
+        } catch (error) {
+            alert('Signup failed: ' + (error.message || 'Unknown error'));
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -109,9 +126,9 @@ export default function SignUp() {
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Address"
-                                    name="address"
-                                    value={form.address}
+                                    label="Mobile Number"
+                                    name="mobile"
+                                    value={form.mobile}
                                     onChange={handleChange}
                                     required
                                     InputProps={{ sx: { borderRadius: 2 } }}

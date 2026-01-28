@@ -2,26 +2,37 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Box, Container, Grid, Paper, Typography, Slider,
-    FormControlLabel, Checkbox, FormGroup, Divider, Skeleton, Button
+    FormControlLabel, Checkbox, FormGroup, Divider, Skeleton, Button, Alert
 } from '@mui/material';
 import HotelCard from '../components/HotelCard';
-
-const mockHotels = [
-    { id: 1, name: "Grand Luxury Resort", location: "Maldives", rating: 4.9, reviews: 120, price: 450, oldPrice: 600, image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070" },
-    { id: 2, name: "City Center Inn", location: "Mumbai, India", rating: 4.2, reviews: 85, price: 120, oldPrice: 150, image: "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?q=80&w=2070" },
-    { id: 3, name: "Mountain View Cabin", location: "Manali, India", rating: 4.7, reviews: 200, price: 80, oldPrice: 100, image: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2070" },
-    { id: 4, name: "Seaside Villa", location: "Goa, India", rating: 4.5, reviews: 45, price: 300, oldPrice: 400, image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070" },
-    { id: 5, name: "Urban Loft", location: "Bengaluru, India", rating: 3.9, reviews: 30, price: 60, oldPrice: 80, image: "https://images.unsplash.com/photo-1590490360182-c8729fcdfc26?q=80&w=2070" },
-    { id: 6, name: "Desert Camp", location: "Jaisalmer, India", rating: 4.8, reviews: 150, price: 200, oldPrice: 250, image: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?q=80&w=2070" },
-];
+import { hotelApi } from '../services/hotelApi'; // ADDED
 
 const ListingsPage = () => {
     const [loading, setLoading] = useState(true);
-    const [priceRange, setPriceRange] = useState([50, 500]);
+    const [priceRange, setPriceRange] = useState([50, 5000]);
+    const [villas, setVillas] = useState([]);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        const timer = setTimeout(() => setLoading(false), 1500);
-        return () => clearTimeout(timer);
+        const fetchVillas = async () => {
+            setLoading(true);
+            try {
+                const response = await hotelApi.getAll();
+                // API returns: { success: true, count: N, data: [...] }
+                if (response.success && Array.isArray(response.data)) {
+                    setVillas(response.data);
+                } else {
+                    setVillas([]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch villas", err);
+                setError("Perhaps no villas are added yet, or the server is down.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchVillas();
     }, []);
 
     const handlePriceChange = (event, newValue) => {
@@ -104,13 +115,12 @@ const ListingsPage = () => {
                             <Typography variant="h4" fontWeight={700}>
                                 Recommended Places
                                 <Typography component="span" variant="h6" color="text.secondary" sx={{ ml: 2 }}>
-                                    {mockHotels.length} places found
+                                    {villas.length} places found
                                 </Typography>
                             </Typography>
-                            <Box>
-                                {/* Sort Dropdown could go here */}
-                            </Box>
                         </Box>
+
+                        {error && <Alert severity="warning" sx={{ mb: 3 }}>{error}</Alert>}
 
                         <Box sx={{
                             display: 'grid',
@@ -123,39 +133,21 @@ const ListingsPage = () => {
                         }}>
                             <AnimatePresence>
                                 {loading ? (
-                                    // SKELETON LOADING
-                                    // SKELETON LOADING
                                     Array.from(new Array(6)).map((_, index) => (
                                         <Box key={index}>
                                             <Paper sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.05)' }}>
-                                                {/* Image Area */}
                                                 <Skeleton variant="rectangular" height={200} animation="wave" />
-
                                                 <Box sx={{ p: 2 }}>
-                                                    {/* Title & Rating */}
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                                         <Skeleton width="60%" height={28} />
                                                         <Skeleton width={40} height={24} sx={{ borderRadius: 1 }} />
                                                     </Box>
-
-                                                    {/* Location */}
                                                     <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                                                         <Skeleton variant="circular" width={16} height={16} />
                                                         <Skeleton width="40%" />
                                                     </Box>
-
-                                                    {/* Reviews */}
-                                                    <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                                                        <Skeleton width={80} height={20} />
-                                                        <Skeleton width={60} height={20} />
-                                                    </Box>
-
-                                                    {/* Price & Button */}
                                                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                                                        <Box>
-                                                            <Skeleton width={50} height={20} />
-                                                            <Skeleton width={100} height={32} />
-                                                        </Box>
+                                                        <Skeleton width={100} height={32} />
                                                         <Skeleton width={100} height={36} sx={{ borderRadius: 8 }} />
                                                     </Box>
                                                 </Box>
@@ -163,12 +155,23 @@ const ListingsPage = () => {
                                         </Box>
                                     ))
                                 ) : (
-                                    // HOTEL CARDS
-                                    mockHotels.map((hotel) => (
-                                        <Box key={hotel.id}>
-                                            <HotelCard hotel={hotel} />
-                                        </Box>
-                                    ))
+                                    villas.length > 0 ? (
+                                        villas.map((villa) => (
+                                            <Box key={villa.id}>
+                                                <HotelCard hotel={{
+                                                    id: villa.id,
+                                                    name: villa.name,
+                                                    location: villa.address,
+                                                    rating: villa.averageRating || "New",
+                                                    reviews: villa.totalRatings || 0,
+                                                    price: villa.pricePerNight,
+                                                    image: villa.imageUrls?.[0] || "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070"
+                                                }} />
+                                            </Box>
+                                        ))
+                                    ) : (
+                                        <Typography variant="h6" sx={{ gridColumn: '1 / -1', textAlign: 'center', mt: 5 }}>No villas found.</Typography>
+                                    )
                                 )}
                             </AnimatePresence>
                         </Box>

@@ -92,15 +92,15 @@ const Navbar = (props) => {
                 ) : (
                     <>
                         <ListItem disablePadding>
-                            <Button fullWidth onClick={() => login('USER')}>Login as User</Button>
+                            <Button fullWidth onClick={() => { navigate('/login'); setMobileOpen(false); }}>Login</Button>
                         </ListItem>
                         <ListItem disablePadding>
-                            <Button fullWidth onClick={() => login('ADMIN')}>Login as Admin</Button>
+                            <Button fullWidth onClick={() => { navigate('/signup'); setMobileOpen(false); }} color="primary">Sign Up</Button>
                         </ListItem>
                     </>
                 )}
             </List>
-        </Box>
+        </Box >
     );
 
     return (
@@ -204,16 +204,10 @@ const Navbar = (props) => {
                                 ) : (
                                     <>
                                         <Button
-                                            onClick={() => login('USER')}
+                                            onClick={() => navigate('/login')}
                                             sx={{ color: 'text.primary', fontWeight: 600 }}
                                         >
-                                            User Login
-                                        </Button>
-                                        <Button
-                                            onClick={() => login('ADMIN')}
-                                            sx={{ color: 'primary.main', fontWeight: 600 }}
-                                        >
-                                            Admin Login
+                                            Login
                                         </Button>
                                         <Button
                                             variant="contained"
