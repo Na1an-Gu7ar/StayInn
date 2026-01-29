@@ -1,4 +1,4 @@
-package com.stayinn.controller;
+      package com.stayinn.controller;
 
 import java.util.HashMap;
 import java.util.List;

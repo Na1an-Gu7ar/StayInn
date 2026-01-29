@@ -1,9 +1,11 @@
 package com.stayinn.controller;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,6 +24,8 @@ import com.stayinn.dto.Payment.PaymentDetailDTO;
 import com.stayinn.dto.Payment.PaymentResponseDTO;
 import com.stayinn.dto.Payment.PaymentUpdateStatusDTO;
 import com.stayinn.dto.Payment.PaymentVerificationDTO;
+import com.stayinn.dto.Payment.RazorpayOrderResponse;
+import com.stayinn.dto.Payment.RazorpayVerificationDTO;
 import com.stayinn.dto.Payment.RefundRequestDTO;
 import com.stayinn.dto.Payment.SimplePaymentDTO;
 import com.stayinn.entities.PaymentStatus;
@@ -389,6 +393,51 @@ public class PaymentController {
             response.put("success", false);
             response.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+    
+    // ========== RAZORPAY ENDPOINTS ==========
+    
+    /**
+     * Create Razorpay order for booking
+     * POST /api/payments/razorpay/create-order/{bookingId}
+     */
+    @PostMapping("/razorpay/create-order/{bookingId}")
+    public ResponseEntity<Map<String, Object>> createRazorpayOrder(@PathVariable Long bookingId) {
+        try {
+            RazorpayOrderResponse orderResponse = paymentService.createRazorpayOrder(bookingId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Razorpay order created successfully");
+            response.put("data", orderResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to create order: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+    
+    /**
+     * Verify Razorpay payment
+     * POST /api/payments/razorpay/verify
+     */
+    @PostMapping("/razorpay/verify")
+    public ResponseEntity<Map<String, Object>> verifyRazorpayPayment(
+            @Valid @RequestBody RazorpayVerificationDTO verificationDTO) {
+        try {
+            PaymentResponseDTO payment = paymentService.verifyAndCapturePayment(verificationDTO);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Payment verified and completed successfully");
+            response.put("data", payment);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Payment verification failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 }

@@ -8,6 +8,8 @@ import com.stayinn.dto.Payment.PaymentDetailDTO;
 import com.stayinn.dto.Payment.PaymentResponseDTO;
 import com.stayinn.dto.Payment.PaymentUpdateStatusDTO;
 import com.stayinn.dto.Payment.PaymentVerificationDTO;
+import com.stayinn.dto.Payment.RazorpayOrderResponse;
+import com.stayinn.dto.Payment.RazorpayVerificationDTO;
 import com.stayinn.dto.Payment.RefundRequestDTO;
 import com.stayinn.dto.Payment.SimplePaymentDTO;
 import com.stayinn.entities.PaymentStatus;
@@ -181,4 +183,22 @@ public interface PaymentService {
      * @return number of payments
      */
     long getTotalPaymentCount();
+    
+    // ========== RAZORPAY-SPECIFIC METHODS ==========
+    
+    /**
+     * Create Razorpay order for booking
+     * @param bookingId booking ID
+     * @return Razorpay order details
+     * @throws Exception if order creation fails
+     */
+    RazorpayOrderResponse createRazorpayOrder(Long bookingId) throws Exception;
+    
+    /**
+     * Verify and capture Razorpay payment
+     * @param verificationDTO Razorpay verification details
+     * @return completed payment
+     * @throws Exception if verification fails
+     */
+    PaymentResponseDTO verifyAndCapturePayment(RazorpayVerificationDTO verificationDTO) throws Exception;
 }
