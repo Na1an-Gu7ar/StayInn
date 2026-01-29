@@ -13,13 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 const Landing = lazy(() => import("./pages/Landing"))
 const HotelDetails = lazy(() => import("./pages/HotelDetails"))
 
-// Mock Admin Page
-const AdminDashboard = () => (
-  <Box sx={{ p: 5, textAlign: 'center' }}>
-    <h1>Admin Dashboard</h1>
-    <p>Only Admins can see this.</p>
-  </Box>
-);
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
 
 const AnimatedRoutes = () => {
   const location = useLocation();

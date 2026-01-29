@@ -8,14 +8,19 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.stayinn.dto.*;
 import com.stayinn.dto.Villa.VillaCreateDTO;
 import com.stayinn.dto.Villa.VillaDetailDTO;
 import com.stayinn.dto.Villa.VillaResponseDTO;
 import com.stayinn.dto.Villa.VillaSearchDTO;
 import com.stayinn.dto.Villa.VillaUpdateDTO;
-import com.stayinn.entities.Villa;
-import com.stayinn.repository.BookingRepository;
-import com.stayinn.repository.VillaRepository;
+//import com.stayinn.dto.Villa.VillaDetailDTO;
+//import com.stayinn.dto.Villa.VillaResponseDTO;
+//import com.stayinn.dto.Villa.VillaSearchDTO;
+//import com.stayinn.dto.Villa.VillaUpdateDTO;
+import com.stayinn.entities.*;
+import com.stayinn.repository.*;
+//import com.stayinn.repository.VillaRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -358,8 +363,8 @@ public class VillaServiceImpl implements VillaService {
                 villa.getImageUrls(),
                 averageRating,
                 totalRatings,
-                villa.getCreatedAt(),
-                villa.getUpdatedAt()
+                villa.getCreatedAt() != null ? villa.getCreatedAt().toString() : null,
+                villa.getUpdatedAt() != null ? villa.getUpdatedAt().toString() : null
         );
     }
     

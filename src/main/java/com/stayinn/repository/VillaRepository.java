@@ -2,6 +2,8 @@ package com.stayinn.repository;
 
 
 import com.stayinn.entities.Villa;
+
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface VillaRepository extends JpaRepository<Villa, Long> {
+	
+	@EntityGraph(attributePaths = {"imageUrls"})
+	List<Villa> findAll();
     
     
     List<Villa> findByNameContainingIgnoreCase(String name);
