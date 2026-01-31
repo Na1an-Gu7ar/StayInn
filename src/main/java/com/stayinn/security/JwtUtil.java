@@ -14,8 +14,9 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtil {
 
 	// 🔴 MUST MATCH Node.js secret
-	private static final String SECRET = "my_super_secret_key_123456";
-
+//	private static final String SECRET = "my_super_secret_key_123456";
+	private static final String SECRET = "mySuperSecretKey";
+	
 	private Key getSigningKey() {
 		return Keys.hmacShaKeyFor(SECRET.getBytes());
 	}
