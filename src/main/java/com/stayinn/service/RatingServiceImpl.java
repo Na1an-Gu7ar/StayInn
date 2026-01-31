@@ -345,9 +345,9 @@ public class RatingServiceImpl implements RatingService {
                 rating.getVilla().getName(),
                 rating.getScore(),
                 rating.getFeedback(),
-                rating.getRatingDate(),
-                rating.getCreatedAt(),
-                rating.getUpdatedAt()
+                rating.getRatingDate() != null ? rating.getRatingDate().toString() : null,
+                rating.getCreatedAt() != null ? rating.getCreatedAt().toString() : null,
+                rating.getUpdatedAt() != null ? rating.getUpdatedAt().toString() : null
         );
     }
     

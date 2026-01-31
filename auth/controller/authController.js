@@ -92,11 +92,11 @@ export const loginController = async (req, res) => {
       sameSite: "strict",
       secure: false,
     });
-
+    console.log(user);
     res.status(200).json({
       message: "Login successful",
       token,
-      role: user.role,
+      user,
     });
   } catch (error) {
     res.status(500).json({ message: "Login failed", error: error.message });

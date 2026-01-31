@@ -20,8 +20,8 @@ public class VillaResponseDTO {
     private List<String> imageUrls;
     private Double averageRating;
     private Integer totalRatings;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String createdAt;
+    private String updatedAt;
     
     // Simplified constructor without timestamps
     public VillaResponseDTO(Long id, String name, String description, String address, 
