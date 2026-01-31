@@ -14,6 +14,38 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    // Hydrate user profile on load to ensure we have the latest details (especially ID)
+    // useEffect(() => {
+    //     const fetchProfile = async () => {
+    //         const savedUser = localStorage.getItem('user');
+    //         if (savedUser) {
+    //             const parsedUser = JSON.parse(savedUser);
+    //             if (parsedUser.token) {
+    //                 try {
+    //                     const response = await authApi.getCurrentUser();
+    //                     if (response.user) {
+    //                         const updatedUser = { ...parsedUser, ...response.user };
+    //                         // Only update state if data actually changed (to avoid loops if we depended on user state)
+    //                         if (JSON.stringify(updatedUser) !== JSON.stringify(parsedUser)) {
+    //                             setUser(updatedUser);
+    //                             localStorage.setItem('user', JSON.stringify(updatedUser));
+    //                             console.log("User profile refreshed:", updatedUser);
+    //                         }
+    //                     }
+    //                 } catch (err) {
+    //                     console.error("Background profile fetch failed:", err);
+    //                     // If token is invalid (401), we might want to logout, but let's be passive for now
+    //                     if (err.response && err.response.status === 401) {
+    //                         logout();
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     };
+
+    //     fetchProfile();
+    // }, []); // Run once on mount
+
     const login = async (credentials) => {
         setLoading(true);
         setError(null);
@@ -23,29 +55,22 @@ export const AuthProvider = ({ children }) => {
             // Expected: { message: "Login successful", token: "...", role: "..." }
 
             if (loginResponse.token) {
-                // Temporary user object with token
-                const tempUser = { token: loginResponse.token, role: loginResponse.role };
-
-                // Save temporarily to allow the next request to have the token
-                localStorage.setItem('user', JSON.stringify(tempUser));
-
-                // 2. Fetch full user profile
-                try {
-                    const profileResponse = await authApi.getCurrentUser();
-                    // Expected: { message: "User profile", user: { id, name, email, mobile, role, ... } }
-
-                    if (profileResponse.user) {
-                        const finalUser = { ...profileResponse.user, token: loginResponse.token };
-                        setUser(finalUser);
-                        localStorage.setItem('user', JSON.stringify(finalUser));
-                        return finalUser;
-                    }
-                } catch (profileError) {
-                    console.warn("Could not fetch full profile, using login data", profileError);
-                    // Fallback if profile fetch fails (e.g. backend error), just use what we have
-                    setUser(tempUser);
-                    return tempUser;
+                // If backend returns full user object, use it
+                let finalUser;
+                if (loginResponse.user) {
+                    finalUser = { ...loginResponse.user, token: loginResponse.token };
+                } else {
+                    // Fallback to minimal user if backend hasn't updated yet
+                    finalUser = { token: loginResponse.token, role: loginResponse.role };
                 }
+
+                // Save to state and local storage
+                setUser(finalUser);
+                localStorage.setItem('user', JSON.stringify(finalUser));
+
+                // Optionally still fetch profile to ensure up-to-date data, 
+                // but we already have what we need to proceed.
+                return finalUser;
             } else {
                 throw new Error("Invalid response from server");
             }

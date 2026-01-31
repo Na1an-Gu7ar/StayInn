@@ -31,8 +31,8 @@ public class BookingDetailDTO {
     private String villaImage;
     
     // Booking Details
-    private LocalDate checkInDate;
-    private LocalDate checkOutDate;
+    private String checkInDate;
+    private String checkOutDate;
     private Integer numberOfNights;
     private Double totalPrice;
     private BookingStatus status;
@@ -43,6 +43,6 @@ public class BookingDetailDTO {
     private String paymentMethod;
     
     // Timestamps
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String createdAt;
+    private String updatedAt;
 }

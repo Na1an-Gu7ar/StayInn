@@ -36,18 +36,27 @@ springInstance.interceptors.request.use(
 );
 
 // Interceptor to attach JWT token to Auth Requests (for /profile)
-authInstance.interceptors.request.use(
-    (config) => {
-        const user = localStorage.getItem('user');
-        if (user) {
-            const parsedUser = JSON.parse(user);
-            if (parsedUser.token) {
-                config.headers.Authorization = `Bearer ${parsedUser.token}`;
-            }
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
+// authInstance.interceptors.request.use(
+//     (config) => {
+//         const user = localStorage.getItem('user');
+//         if (user) {
+//             const parsedUser = JSON.parse(user);
+//             if (parsedUser.token) {
+//                 config.headers.Authorization = `Bearer ${parsedUser.token}`;
+//             }
+//         }
+//         return config;
+//     },
+//     (error) => Promise.reject(error)
+// );
+
+authInstance.interceptors.request.use(config => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user?.token) {
+        config.headers.Authorization = `Bearer ${user.token}`;
+    }
+    return config;
+});
+
 
 export { springInstance, authInstance };

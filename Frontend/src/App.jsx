@@ -12,7 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 
 const Landing = lazy(() => import("./pages/Landing"))
 const HotelDetails = lazy(() => import("./pages/HotelDetails"))
-
+const Payment = lazy(() => import('./pages/Payment'));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
 
 const AnimatedRoutes = () => {
@@ -23,6 +23,12 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+
+        <Route path="/payment/:bookingId" element={
+          <ProtectedRoute allowedRoles={['USER', 'ADMIN']}>
+            <Payment />
+          </ProtectedRoute>
+        } />
 
         {/* Redirect unknown routes to Login */}
         <Route path="*" element={<Navigate to="/login" replace />} />

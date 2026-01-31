@@ -1,38 +1,81 @@
 package com.stayinn.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.stayinn.security.JwtAuthenticationFilter;
 
 @Configuration
 public class SecurityConfig {
-	
+
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+	public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+	}
+
 	@Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-       http
-           // 1. Disable CSRF (Essential for stateless REST APIs)
-           .csrf(csrf -> csrf.disable()) 
-           
-           // 2. Configure URL permissions
-           .authorizeHttpRequests(auth -> auth
-                   // Allow POST for registration (Anyone can register)
-//                   .requestMatchers(HttpMethod.POST, "/api/users").permitAll() 
-//                   
-//                   // Allow GET for fetching all users (For development/testing purposes only!)
-//                   .requestMatchers(HttpMethod.GET, "/api/users", "/api/users/getUsers").permitAll()
-                   
-                   // All other requests require a valid JWT token
-                   .anyRequest().permitAll()
-           );
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-       return http.build();
-   }
+		http
+				// 1️⃣ Disable CSRF (REST + JWT)
+				.csrf(csrf -> csrf.disable())
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
+				// 2️⃣ Enable CORS (VERY IMPORTANT)
+				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+				// 3️⃣ Stateless session (JWT)
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+				// 4️⃣ Authorization rules
+				.authorizeHttpRequests(auth -> auth
+						// Public APIs
+						.requestMatchers("/api/users/login", "/api/users/signup", "/api/**").permitAll()
+
+						// Everything else needs JWT
+						.anyRequest().authenticated())
+
+				// 5️⃣ JWT filter
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
+	}
+
+	// 🔥 CENTRAL CORS CONFIG
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+
+		CorsConfiguration config = new CorsConfiguration();
+
+		config.setAllowedOrigins(List.of("http://localhost:5173"));
+
+		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+		config.setExposedHeaders(List.of("Authorization"));
+
+		config.setAllowCredentials(true);
+
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", config);
+
+		return source;
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 }

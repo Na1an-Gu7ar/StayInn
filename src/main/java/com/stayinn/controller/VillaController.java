@@ -30,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/villas")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class VillaController {
     
     private final VillaService villaService;
