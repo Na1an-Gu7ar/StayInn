@@ -6,8 +6,10 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 @SpringBootApplication
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class Application {
 
 	public static void main(String[] args) {

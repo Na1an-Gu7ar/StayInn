@@ -2,6 +2,8 @@ package com.stayinn.entities;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -32,9 +34,11 @@ public class User extends BaseEntity{
 	    private Role role; // ADMIN, USER
 
 	    @OneToMany(mappedBy = "user")
+	    @JsonIgnore
 	    private List<Booking> bookings;
 
 	    @OneToMany(mappedBy = "user")
+	    @JsonIgnore
 	    private List<Rating> ratings; // History of ratings given by this user
 	    
 	    

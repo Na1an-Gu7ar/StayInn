@@ -19,13 +19,13 @@ public class RatingResponseDTO {
     private String villaName;
     private Integer score;
     private String feedback;
-    private LocalDate ratingDate;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String ratingDate;
+    private String createdAt;
+    private String updatedAt;
     
     // Simplified constructor without timestamps
     public RatingResponseDTO(Long id, Long userId, String userName, Long villaId, 
-                            String villaName, Integer score, String feedback, LocalDate ratingDate) {
+                            String villaName, Integer score, String feedback, String ratingDate) {
         this.id = id;
         this.userId = userId;
         this.userName = userName;

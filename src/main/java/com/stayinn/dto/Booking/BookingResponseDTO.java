@@ -21,17 +21,17 @@ public class BookingResponseDTO {
     private Long villaId;
     private String villaName;
     private String villaLocation;
-    private LocalDate checkInDate;
-    private LocalDate checkOutDate;
+    private String checkInDate;
+    private String checkOutDate;
     private Integer numberOfNights;
     private Double totalPrice;
     private BookingStatus status;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String createdAt;
+    private String updatedAt;
     
     // Simple constructor without villa/user details
-    public BookingResponseDTO(Long id, Long userId, Long villaId, LocalDate checkInDate, 
-                             LocalDate checkOutDate, Double totalPrice, BookingStatus status) {
+    public BookingResponseDTO(Long id, Long userId, Long villaId, String checkInDate, 
+                             String checkOutDate, Double totalPrice, BookingStatus status) {
         this.id = id;
         this.userId = userId;
         this.villaId = villaId;

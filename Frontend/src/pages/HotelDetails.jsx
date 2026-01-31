@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
     Box, Container, Grid, Typography, Button, Paper, Rating, Divider,
-    Chip, Avatar, TextField, IconButton
+    Chip, Avatar, TextField, IconButton, CircularProgress, Alert, Snackbar
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -18,45 +18,153 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShareIcon from '@mui/icons-material/Share';
 
 import { motion } from 'framer-motion';
+import { hotelApi } from '../services/hotelApi';
+import { bookingApi } from '../services/bookingApi';
+import { ratingApi } from '../services/ratingApi';
+import { useAuth } from '../context/AuthContext';
+import dayjs from 'dayjs';
 
-const mockHotel = {
-    id: 1,
-    name: "Grand Luxury Resort",
-    location: "Maldives, Private Island",
-    description: "Experience world-class service at Grand Luxury Resort. Nestled in the heart of the Maldives, this resort offers a pristine beachfront, private villas with infinity pools, and an award-winning spa. Enjoy gourmet dining under the stars and explore the vibrant coral reefs just steps from your room.",
-    price: 450,
-    rating: 4.8,
-    reviews: 124,
-    images: [
-        "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070",
-        "https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=2025",
-        "https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=2074",
-        "https://images.unsplash.com/photo-1563911302283-d2bc129e7c1f?q=80&w=2070",
-        "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?q=80&w=2070"
-    ],
-    amenities: [
-        { icon: <WifiIcon />, name: "Free Wifi" },
-        { icon: <PoolIcon />, name: "Infinity Pool" },
-        { icon: <SpaIcon />, name: "Spa & Wellness" },
-        { icon: <RestaurantIcon />, name: "Gourmet Dining" },
-        { icon: <AcUnitIcon />, name: "Air Conditioning" },
-        { icon: <DirectionsCarIcon />, name: "Free Parking" },
-    ],
-    reviewsList: [
-        { id: 1, user: "Alice Johnson", rating: 5, date: "Oct 12, 2025", comment: "Absolutely breathtaking! The service was impeccable and the views are unreal." },
-        { id: 2, user: "Mark Smith", rating: 4, date: "Sep 28, 2025", comment: "Great stay, but the food was a bit pricey. Overall wonderful experience." },
-    ]
-};
 
 const HotelDetails = () => {
     const { id } = useParams();
+    const navigate = useNavigate();
+    const { user } = useAuth();
+
+    // Data State
+    const [villa, setVilla] = useState(null);
+    const [ratings, setRatings] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Booking State
+    const [checkIn, setCheckIn] = useState(null);
+    const [checkOut, setCheckOut] = useState(null);
+    const [guests, setGuests] = useState(2);
+    const [bookingLoading, setBookingLoading] = useState(false);
+
+    // Rating Form State
     const [reviewText, setReviewText] = useState("");
+    const [reviewScore, setReviewScore] = useState(5);
+    const [submittingReview, setSubmittingReview] = useState(false);
 
-    // In a real app, fetch data based on ID. Using mockHotel for now.
+    // UI Feedback
+    const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
-    const handleBooking = () => {
-        alert("Booking confirmed! (Sidebar Mock)");
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                // Parallel fetch
+                const [villaRes, ratingRes] = await Promise.all([
+                    hotelApi.getDetails(id),
+                    ratingApi.getByVillaId(id)
+                ]);
+
+                if (villaRes.success) {
+                    setVilla(villaRes.data);
+                } else {
+                    setError("Failed to load villa details");
+                }
+
+                if (ratingRes.success) {
+                    setRatings(ratingRes.data);
+                }
+
+            } catch (err) {
+                console.error(err);
+                setError("Could not load villa data.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) fetchData();
+    }, [id]);
+
+    const handleBooking = async () => {
+        if (!user) {
+            setSnackbar({ open: true, message: "Please login again.", severity: "error" });
+            setTimeout(() => navigate('/login'), 1500);
+            return;
+        }
+
+        if (!checkIn || !checkOut) {
+            setSnackbar({ open: true, message: "Please select check-in and check-out dates.", severity: "error" });
+            return;
+        }
+
+        setBookingLoading(true);
+        try {
+            // Correct Payload for Create Booking (returns PENDING status)
+            const payload = {
+                villaId: parseInt(id),
+                userId: user.user_id,
+                checkInDate: checkIn.format('YYYY-MM-DD'),
+                checkOutDate: checkOut.format('YYYY-MM-DD'),
+            };
+            console.log(payload);
+
+            const response = await bookingApi.create(payload);
+            setBookingLoading(false); // Stop loading before navigate
+
+            if (response && response.data && response.data.id) {
+                setSnackbar({ open: true, message: "Booking initiated! Redirecting to payment...", severity: "success" });
+                // Short delay to show snackbar
+                setTimeout(() => {
+                    navigate(`/payment/${response.data.id}`);
+                }, 1000);
+            }
+        } catch (err) {
+            console.error(err);
+            setBookingLoading(false);
+            setSnackbar({ open: true, message: "Booking failed: " + (err.response?.data?.message || err.message), severity: "error" });
+        }
     };
+
+    const handleReviewSubmit = async () => {
+        if (!user) {
+            setSnackbar({ open: true, message: "Please login to leave a review.", severity: "warning" });
+            return;
+        }
+
+        if (!reviewText.trim()) return;
+
+        setSubmittingReview(true);
+        try {
+            const payload = {
+                userId: user.user_id,
+                villaId: parseInt(id),
+                score: reviewScore,
+                comment: reviewText
+            };
+
+            const response = await ratingApi.create(payload);
+            if (response.success) {
+                setSnackbar({ open: true, message: "Review posted!", severity: "success" });
+                setReviewText("");
+                // Refresh ratings
+                const newRatings = await ratingApi.getByVillaId(id);
+                if (newRatings.success) setRatings(newRatings.data);
+            }
+        } catch (err) {
+            setSnackbar({ open: true, message: "Failed to post review: " + (err.response?.data?.message || err.message), severity: "error" });
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
+
+    const calculateTotal = () => {
+        if (!villa || !checkIn || !checkOut) return 0;
+        const nights = checkOut.diff(checkIn, 'day');
+        if (nights <= 0) return 0;
+        return nights * villa.pricePerNight;
+    };
+
+    const nightCount = (checkIn && checkOut) ? checkOut.diff(checkIn, 'day') : 0;
+    const totalCost = calculateTotal();
+
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}><CircularProgress /></Box>;
+    if (error || !villa) return <Container sx={{ py: 10 }}><Alert severity="error">{error || "Villa not found"}</Alert></Container>;
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -66,17 +174,24 @@ const HotelDetails = () => {
                 transition={{ duration: 0.5 }}
             >
                 <Container maxWidth="xl" sx={{ py: 4 }}>
+                    <Snackbar
+                        open={snackbar.open}
+                        autoHideDuration={6000}
+                        onClose={() => setSnackbar({ ...snackbar, open: false })}
+                    >
+                        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+                    </Snackbar>
 
                     {/* TITLE HEADER */}
                     <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                         <Box>
                             <Typography variant="h3" fontWeight={700} gutterBottom>
-                                {mockHotel.name}
+                                {villa.name}
                             </Typography>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'text.secondary' }}>
                                 <LocationOnIcon fontSize="small" />
                                 <Typography variant="h6" fontWeight={500}>
-                                    {mockHotel.location}
+                                    {villa.address}
                                 </Typography>
                             </Box>
                         </Box>
@@ -86,41 +201,27 @@ const HotelDetails = () => {
                         </Box>
                     </Box>
 
-                    {/* IMAGE GALLERY - Bento Grid Style */}
+                    {/* IMAGE GALLERY - Dynamic */}
                     <Box sx={{
                         display: 'grid',
                         gridTemplateColumns: { xs: '1fr', md: '2fr 1fr', lg: '2fr 1fr 1fr' },
                         gridTemplateRows: { xs: 'auto', md: '200px 200px' },
                         gap: 2,
                         mb: 6,
-                        height: { md: '416px' } // 200*2 + 16 gap
+                        height: { md: '416px' }
                     }}>
-                        {/* Main Image */}
                         <Box
                             component="img"
-                            src={mockHotel.images[0]}
-                            sx={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                borderRadius: 4,
-                                gridRow: { xs: 'span 1', md: 'span 2' },
-                                cursor: 'pointer'
-                            }}
+                            src={villa.imageUrls?.[0] || "https://via.placeholder.com/800x600?text=No+Image"}
+                            sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4, gridRow: { xs: 'span 1', md: 'span 2' }, cursor: 'pointer' }}
                         />
-                        {/* Sub Images */}
-                        {mockHotel.images.slice(1, 5).map((img, idx) => (
+                        {/* Sub Images (up to 4) */}
+                        {villa.imageUrls?.slice(1, 5).map((img, idx) => (
                             <Box
                                 key={idx}
                                 component="img"
                                 src={img}
-                                sx={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: 'cover',
-                                    borderRadius: 4,
-                                    display: { xs: 'none', md: 'block' }
-                                }}
+                                sx={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4, display: { xs: 'none', md: 'block' } }}
                             />
                         ))}
                     </Box>
@@ -128,34 +229,12 @@ const HotelDetails = () => {
                     <Grid container spacing={4}>
                         {/* LEFT CONTENT */}
                         <Grid item xs={12} md={8}>
-
                             {/* DESCRIPTION */}
                             <Box sx={{ mb: 5 }}>
-                                <Typography variant="h5" fontWeight={700} gutterBottom>
-                                    About this place
-                                </Typography>
+                                <Typography variant="h5" fontWeight={700} gutterBottom>About this place</Typography>
                                 <Typography variant="body1" color="text.secondary" paragraph sx={{ lineHeight: 1.8 }}>
-                                    {mockHotel.description}
+                                    {villa.description}
                                 </Typography>
-                            </Box>
-
-                            <Divider sx={{ mb: 5 }} />
-
-                            {/* AMENITIES */}
-                            <Box sx={{ mb: 5 }}>
-                                <Typography variant="h5" fontWeight={700} gutterBottom>
-                                    What this place offers
-                                </Typography>
-                                <Grid container spacing={2} sx={{ mt: 1 }}>
-                                    {mockHotel.amenities.map((item, index) => (
-                                        <Grid item xs={6} sm={4} key={index}>
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                {item.icon}
-                                                <Typography>{item.name}</Typography>
-                                            </Box>
-                                        </Grid>
-                                    ))}
-                                </Grid>
                             </Box>
 
                             <Divider sx={{ mb: 5 }} />
@@ -163,30 +242,39 @@ const HotelDetails = () => {
                             {/* REVIEWS SECTION */}
                             <Box sx={{ mb: 5 }}>
                                 <Typography variant="h5" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Avatar sx={{ bgcolor: 'primary.main', width: 28, height: 28, fontSize: 14 }}>{mockHotel.rating}</Avatar>
-                                    {mockHotel.reviews} Reviews
+                                    <Avatar sx={{ bgcolor: 'primary.main', width: 28, height: 28, fontSize: 14 }}>
+                                        {villa.averageRating ? villa.averageRating.toFixed(1) : "New"}
+                                    </Avatar>
+                                    {villa.totalRatings || 0} Reviews
                                 </Typography>
 
                                 {/* Review List */}
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 3 }}>
-                                    {mockHotel.reviewsList.map(review => (
+                                    {ratings.length > 0 ? ratings.map(review => (
                                         <Paper key={review.id} elevation={0} sx={{ p: 3, bgcolor: 'grey.50', borderRadius: 3 }}>
                                             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                                                <Avatar>{review.user[0]}</Avatar>
+                                                <Avatar>{review.userName?.[0] || 'U'}</Avatar>
                                                 <Box>
-                                                    <Typography fontWeight={600}>{review.user}</Typography>
-                                                    <Typography variant="caption" color="text.secondary">{review.date}</Typography>
+                                                    <Typography fontWeight={600}>{review.userName || 'Anonymous'}</Typography>
+                                                    <Typography variant="caption" color="text.secondary">{review.createdAt}</Typography>
                                                 </Box>
                                             </Box>
-                                            <Rating value={review.rating} readOnly size="small" sx={{ mb: 1 }} />
-                                            <Typography variant="body2">{review.comment}</Typography>
+                                            <Rating value={review.score} readOnly size="small" sx={{ mb: 1 }} />
+                                            <Typography variant="body2">{review.feedback}</Typography>
                                         </Paper>
-                                    ))}
+                                    )) : (
+                                        <Typography color="text.secondary">No reviews yet.</Typography>
+                                    )}
                                 </Box>
 
                                 {/* Add Review */}
-                                <Box sx={{ mt: 4 }}>
+                                <Box sx={{ mt: 4, p: 3, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
                                     <Typography variant="h6" gutterBottom>Add a Review</Typography>
+                                    <Rating
+                                        value={reviewScore}
+                                        onChange={(event, newValue) => setReviewScore(newValue)}
+                                        sx={{ mb: 2 }}
+                                    />
                                     <TextField
                                         fullWidth
                                         multiline
@@ -196,7 +284,13 @@ const HotelDetails = () => {
                                         onChange={(e) => setReviewText(e.target.value)}
                                         sx={{ mb: 2 }}
                                     />
-                                    <Button variant="contained">Post Review</Button>
+                                    <Button
+                                        variant="contained"
+                                        onClick={handleReviewSubmit}
+                                        disabled={submittingReview}
+                                    >
+                                        {submittingReview ? "Posting..." : "Post Review"}
+                                    </Button>
                                 </Box>
                             </Box>
                         </Grid>
@@ -205,36 +299,47 @@ const HotelDetails = () => {
                         <Grid item xs={12} md={4}>
                             <Paper
                                 elevation={3}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 4,
-                                    position: 'sticky',
-                                    top: 100,
-                                    border: '1px solid rgba(0,0,0,0.08)'
-                                }}
+                                sx={{ p: 3, borderRadius: 4, position: 'sticky', top: 100, border: '1px solid rgba(0,0,0,0.08)' }}
                             >
                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', mb: 3 }}>
                                     <Typography variant="h4" fontWeight={700}>
-                                        ${mockHotel.price} <Typography component="span" variant="body1" color="text.secondary">/ night</Typography>
+                                        ${villa.pricePerNight} <Typography component="span" variant="body1" color="text.secondary">/ night</Typography>
                                     </Typography>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                         <FavoriteBorderIcon fontSize="small" />
-                                        <Typography fontWeight={600}>{mockHotel.rating}</Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'underline' }}>
-                                            ({mockHotel.reviews} reviews)
-                                        </Typography>
+                                        <Typography fontWeight={600}>{villa.averageRating ? villa.averageRating.toFixed(1) : "New"}</Typography>
                                     </Box>
                                 </Box>
 
                                 <Grid container spacing={2} sx={{ mb: 3 }}>
                                     <Grid item xs={6}>
-                                        <DatePicker label="Check-in" slotProps={{ textField: { fullWidth: true } }} />
+                                        <DatePicker
+                                            label="Check-in"
+                                            value={checkIn}
+                                            onChange={(newValue) => setCheckIn(newValue)}
+                                            disablePast
+                                            slotProps={{ textField: { fullWidth: true } }}
+                                        />
                                     </Grid>
                                     <Grid item xs={6}>
-                                        <DatePicker label="Check-out" slotProps={{ textField: { fullWidth: true } }} />
+                                        <DatePicker
+                                            label="Check-out"
+                                            value={checkOut}
+                                            onChange={(newValue) => setCheckOut(newValue)}
+                                            minDate={checkIn}
+                                            disabled={!checkIn}
+                                            slotProps={{ textField: { fullWidth: true } }}
+                                        />
                                     </Grid>
                                     <Grid item xs={12}>
-                                        <TextField fullWidth label="Guests" type="number" defaultValue={2} />
+                                        <TextField
+                                            fullWidth
+                                            label="Guests"
+                                            type="number"
+                                            value={guests}
+                                            onChange={(e) => setGuests(e.target.value)}
+                                            InputProps={{ inputProps: { min: 1 } }}
+                                        />
                                     </Grid>
                                 </Grid>
 
@@ -243,43 +348,34 @@ const HotelDetails = () => {
                                     variant="contained"
                                     size="large"
                                     onClick={handleBooking}
+                                    disabled={bookingLoading}
                                     sx={{
                                         py: 1.5,
                                         fontSize: '1.1rem',
                                         background: 'linear-gradient(90deg, #FF385C 0%, #E61E43 100%)'
                                     }}
                                 >
-                                    Reserve
+                                    {bookingLoading ? "Reserving..." : "Reserve"}
                                 </Button>
 
-                                <Typography variant="caption" display="block" textAlign="center" sx={{ mt: 2, color: 'text.secondary' }}>
-                                    You won't be charged yet
-                                </Typography>
-
                                 <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography sx={{ textDecoration: 'underline' }}>${mockHotel.price} x 5 nights</Typography>
-                                        <Typography>${mockHotel.price * 5}</Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography sx={{ textDecoration: 'underline' }}>Cleaning fee</Typography>
-                                        <Typography>$50</Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography sx={{ textDecoration: 'underline' }}>Service fee</Typography>
-                                        <Typography>$80</Typography>
-                                    </Box>
-                                    <Divider />
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <Typography fontWeight={700}>Total before taxes</Typography>
-                                        <Typography fontWeight={700}>${mockHotel.price * 5 + 130}</Typography>
-                                    </Box>
+                                    {nightCount > 0 && (
+                                        <>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <Typography sx={{ textDecoration: 'underline' }}>${villa.pricePerNight} x {nightCount} nights</Typography>
+                                                <Typography>${(villa.pricePerNight * nightCount).toFixed(2)}</Typography>
+                                            </Box>
+                                            <Divider />
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <Typography fontWeight={700}>Total</Typography>
+                                                <Typography fontWeight={700}>${totalCost.toFixed(2)}</Typography>
+                                            </Box>
+                                        </>
+                                    )}
                                 </Box>
-
                             </Paper>
                         </Grid>
                     </Grid>
-
                 </Container>
             </motion.div>
         </LocalizationProvider>

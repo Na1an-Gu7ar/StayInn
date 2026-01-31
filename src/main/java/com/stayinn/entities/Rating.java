@@ -2,6 +2,8 @@ package com.stayinn.entities;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,9 +29,11 @@ public class Rating extends BaseEntity{
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user; // Who gave the rating
 
     @ManyToOne
     @JoinColumn(name = "villa_id")
+    @JsonIgnore
     private Villa villa; // Which villa was rated
 }
