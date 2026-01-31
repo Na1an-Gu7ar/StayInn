@@ -20,8 +20,8 @@ public class VillaResponseDTO {
     private List<String> imageUrls;
     private Double averageRating;
     private Integer totalRatings;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String createdAt;
+    private String updatedAt;
     
     // Simplified constructor without timestamps
     public VillaResponseDTO(Long id, String name, String description, String address, 
@@ -35,5 +35,8 @@ public class VillaResponseDTO {
         this.imageUrls = imageUrls;
         this.averageRating = averageRating;
         this.totalRatings = totalRatings;
+//        this.createdAt = createdAt != null ? LocalDateTime.parse(createdAt) : null;
+//        this.updatedAt = updatedAt != null ? LocalDateTime.parse(updatedAt) : null;
     }
+
 }
