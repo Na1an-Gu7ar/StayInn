@@ -18,12 +18,7 @@ app.use(cors());
 const router = Router();
 
 // Any logged-in user
-router.get("/profile", protect, (req, res) => {
-  res.json({
-    message: "User profile",
-    user: req.user,
-  });
-});
+// Profile route removed - handled by Spring Boot
 
 // Only ADMIN
 router.get("/admin", protect, authorizeRoles("ADMIN"), (req, res) => {

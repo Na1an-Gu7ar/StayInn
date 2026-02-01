@@ -135,7 +135,7 @@ const HotelDetails = () => {
                 userId: user.user_id,
                 villaId: parseInt(id),
                 score: reviewScore,
-                comment: reviewText
+                feedback: reviewText
             };
 
             const response = await ratingApi.create(payload);
