@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Defines the base URL for your Spring Boot Backend
 // Change this if your backend runs on a different port or URL
-const API_BASE_URL = "http://localhost:8080/api"; 
+const API_BASE_URL = "http://localhost:8080/api";
 
 const api = axios.create({
     baseURL: API_BASE_URL,
