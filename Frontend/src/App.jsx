@@ -13,7 +13,8 @@ import ProtectedRoute from "./components/ProtectedRoute"
 const Landing = lazy(() => import("./pages/Landing"))
 const HotelDetails = lazy(() => import("./pages/HotelDetails"))
 const Payment = lazy(() => import('./pages/Payment'));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"))
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const Profile = lazy(() => import("./pages/Profile"));
 
 const AnimatedRoutes = () => {
   const location = useLocation();
@@ -60,6 +61,16 @@ const AnimatedRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* User Profile */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

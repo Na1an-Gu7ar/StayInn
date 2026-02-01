@@ -80,6 +80,9 @@ const Navbar = (props) => {
 
                 {isAuthenticated ? (
                     <>
+                        <ListItem disablePadding>
+                            <Button fullWidth onClick={() => handleNavigate('/profile')}>My Profile</Button>
+                        </ListItem>
                         {isAdmin && (
                             <ListItem disablePadding>
                                 <Button fullWidth onClick={() => handleNavigate('/admin')} color="warning">Admin Dashboard</Button>
@@ -191,7 +194,7 @@ const Navbar = (props) => {
                                             <Avatar
                                                 src={user.avatar}
                                                 sx={{ width: 32, height: 32, mr: 1, cursor: 'pointer' }}
-                                            // onClick={handleOpenUserMenu} // In real app, open menu
+                                                onClick={() => navigate('/profile')}
                                             />
                                         </Tooltip>
                                         <Button

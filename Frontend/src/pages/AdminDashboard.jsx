@@ -10,10 +10,19 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { hotelApi } from '../services/hotelApi';
+import { bookingApi } from '../services/bookingApi';
+import { Tab, Tabs } from '@mui/material';
 
 const AdminDashboard = () => {
     const [villas, setVillas] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    // Bookings State
+    const [bookings, setBookings] = useState([]);
+    const [bookingsLoading, setBookingsLoading] = useState(false);
+
+    // Tab State
+    const [tabValue, setTabValue] = useState(0);
 
     // UI State
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -54,6 +63,45 @@ const AdminDashboard = () => {
     useEffect(() => {
         fetchVillas();
     }, []);
+
+    useEffect(() => {
+        if (tabValue === 1) {
+            fetchBookings();
+        }
+    }, [tabValue]);
+
+    const fetchBookings = async () => {
+        setBookingsLoading(true);
+        try {
+            const response = await bookingApi.getAll();
+            if (response.success && Array.isArray(response.data)) {
+                // Sort by ID desc
+                setBookings(response.data.sort((a, b) => b.id - a.id));
+            } else {
+                setBookings([]);
+            }
+        } catch (err) {
+            console.error("Failed to fetch bookings", err);
+            showSnackbar("Failed to load bookings", "error");
+        } finally {
+            setBookingsLoading(false);
+        }
+    };
+
+    const handleBookingAction = async (id, action) => {
+        if (!window.confirm(`Are you sure you want to ${action} this booking?`)) return;
+        try {
+            if (action === 'cancel') {
+                await bookingApi.cancel(id, 'Admin Cancelled');
+            } else if (action === 'delete') {
+                await bookingApi.delete(id);
+            }
+            showSnackbar(`Booking ${action}ed successfully!`);
+            fetchBookings();
+        } catch (err) {
+            showSnackbar(`Failed to ${action} booking`, "error");
+        }
+    };
 
     const showSnackbar = (message, severity = 'success') => {
         setSnackbar({ open: true, message, severity });
@@ -156,68 +204,132 @@ const AdminDashboard = () => {
                     </Button>
                 </Box>
 
-                <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden' }}>
-                    {loading ? (
-                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>
-                    ) : (
-                        <TableContainer>
-                            <Table>
-                                <TableHead sx={{ bgcolor: 'grey.50' }}>
-                                    <TableRow>
-                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>ID</TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Image</TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Name</TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Location</TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Price</TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Rating</TableCell>
-                                        <TableCell sx={{ fontWeight: 600, color: 'text.secondary', textAlign: 'right' }}>Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {villas.map((villa) => (
-                                        <TableRow key={villa.id} hover>
-                                            <TableCell sx={{ color: 'text.secondary' }}>#{villa.id}</TableCell>
-                                            <TableCell>
-                                                <Box
-                                                    component="img"
-                                                    src={villa.imageUrls?.[0] || 'https://via.placeholder.com/50'}
-                                                    sx={{ width: 60, height: 60, borderRadius: 2, objectFit: 'cover' }}
-                                                />
-                                            </TableCell>
-                                            <TableCell sx={{ fontWeight: 500 }}>{villa.name}</TableCell>
-                                            <TableCell>{villa.address}</TableCell>
-                                            <TableCell sx={{ fontWeight: 600 }}>${villa.pricePerNight}</TableCell>
-                                            <TableCell>
-                                                <Chip
-                                                    label={`${villa.averageRating || 'New'} (${villa.totalRatings || 0})`}
-                                                    size="small"
-                                                    color={villa.averageRating > 4 ? "success" : "default"}
-                                                    variant="outlined"
-                                                />
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <IconButton color="primary" onClick={() => handleOpen(villa)} sx={{ mr: 1 }}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton color="error" onClick={() => confirmDelete(villa.id)}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {villas.length === 0 && (
+                <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
+                    <Tab label="Manage Villas" />
+                    <Tab label="Manage Bookings" />
+                </Tabs>
+
+                {tabValue === 0 && (
+                    <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden' }}>
+                        {loading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>
+                        ) : (
+                            <TableContainer>
+                                <Table>
+                                    <TableHead sx={{ bgcolor: 'grey.50' }}>
                                         <TableRow>
-                                            <TableCell colSpan={7} align="center" sx={{ py: 5 }}>
-                                                <Typography variant="h6" color="text.secondary">No villas found.</Typography>
-                                                <Button onClick={() => handleOpen()} sx={{ mt: 2 }}>Create your first villa</Button>
-                                            </TableCell>
+                                            <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>ID</TableCell>
+                                            <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Image</TableCell>
+                                            <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Name</TableCell>
+                                            <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Location</TableCell>
+                                            <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Price</TableCell>
+                                            <TableCell sx={{ fontWeight: 600, color: 'text.secondary' }}>Rating</TableCell>
+                                            <TableCell sx={{ fontWeight: 600, color: 'text.secondary', textAlign: 'right' }}>Actions</TableCell>
                                         </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    )}
-                </Paper>
+                                    </TableHead>
+                                    <TableBody>
+                                        {villas.map((villa) => (
+                                            <TableRow key={villa.id} hover>
+                                                <TableCell sx={{ color: 'text.secondary' }}>#{villa.id}</TableCell>
+                                                <TableCell>
+                                                    <Box
+                                                        component="img"
+                                                        src={villa.imageUrls?.[0] || 'https://via.placeholder.com/50'}
+                                                        sx={{ width: 60, height: 60, borderRadius: 2, objectFit: 'cover' }}
+                                                    />
+                                                </TableCell>
+                                                <TableCell sx={{ fontWeight: 500 }}>{villa.name}</TableCell>
+                                                <TableCell>{villa.address}</TableCell>
+                                                <TableCell sx={{ fontWeight: 600 }}>${villa.pricePerNight}</TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        label={`${villa.averageRating || 'New'} (${villa.totalRatings || 0})`}
+                                                        size="small"
+                                                        color={villa.averageRating > 4 ? "success" : "default"}
+                                                        variant="outlined"
+                                                    />
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    <IconButton color="primary" onClick={() => handleOpen(villa)} sx={{ mr: 1 }}>
+                                                        <EditIcon />
+                                                    </IconButton>
+                                                    <IconButton color="error" onClick={() => confirmDelete(villa.id)}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        {villas.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={7} align="center" sx={{ py: 5 }}>
+                                                    <Typography variant="h6" color="text.secondary">No villas found.</Typography>
+                                                    <Button onClick={() => handleOpen()} sx={{ mt: 2 }}>Create your first villa</Button>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </Paper>
+                )}
+
+                {tabValue === 1 && (
+                    <Paper elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, overflow: 'hidden' }}>
+                        {bookingsLoading ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}><CircularProgress /></Box>
+                        ) : (
+                            <TableContainer>
+                                <Table>
+                                    <TableHead sx={{ bgcolor: 'grey.50' }}>
+                                        <TableRow>
+                                            <TableCell>ID</TableCell>
+                                            <TableCell>Villa</TableCell>
+                                            <TableCell>User</TableCell>
+                                            <TableCell>Dates</TableCell>
+                                            <TableCell>Total</TableCell>
+                                            <TableCell>Status</TableCell>
+                                            <TableCell align="right">Actions</TableCell>
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {bookings.map((booking) => (
+                                            <TableRow key={booking.id} hover>
+                                                <TableCell>#{booking.id}</TableCell>
+                                                <TableCell>{booking.villaName}</TableCell>
+                                                <TableCell>{booking.userEmail}</TableCell>
+                                                <TableCell>{booking.checkInDate} — {booking.checkOutDate}</TableCell>
+                                                <TableCell>₹{booking.totalPrice}</TableCell>
+                                                <TableCell>
+                                                    <Chip
+                                                        label={booking.status}
+                                                        size="small"
+                                                        color={booking.status === 'CONFIRMED' ? 'success' : booking.status === 'CANCELLED' ? 'error' : 'warning'}
+                                                    />
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    {booking.status !== 'CANCELLED' && (
+                                                        <Button size="small" color="error" onClick={() => handleBookingAction(booking.id, 'cancel')}>
+                                                            Cancel
+                                                        </Button>
+                                                    )}
+                                                    <IconButton size="small" onClick={() => handleBookingAction(booking.id, 'delete')}>
+                                                        <DeleteIcon />
+                                                    </IconButton>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        {bookings.length === 0 && (
+                                            <TableRow>
+                                                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>No bookings found.</TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </Paper>
+                )}
 
                 {/* Add/Edit Dialog */}
                 <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
