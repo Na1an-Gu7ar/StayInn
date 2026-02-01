@@ -83,7 +83,7 @@ export const loginController = async (req, res) => {
         role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { subject: user.email, expiresIn: "1h" }
     );
 
     // Cookie

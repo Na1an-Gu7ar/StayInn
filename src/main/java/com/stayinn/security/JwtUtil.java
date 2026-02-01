@@ -10,9 +10,8 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-	// 🔴 MUST MATCH Node.js secret
-//	private static final String SECRET = "my_super_secret_key_123456";
-	private static final String SECRET = "mySuperSecretKey";
+	// MUST MATCH with Node.js secret
+	private static final String SECRET = "my_super_secret_key_1234567890123456"; // must be at least 32 bytes for HS256
 	
 	private Key getSigningKey() {
 		return Keys.hmacShaKeyFor(SECRET.getBytes());
@@ -25,8 +24,10 @@ public class JwtUtil {
 	public boolean isTokenValid(String token) {
 		try {
 			Claims claims = extractClaims(token);
+//			System.out.println("JWT VALID for user: " + claims.getSubject());
 			return claims.getExpiration().after(new Date());
 		} catch (JwtException | IllegalArgumentException e) {
+//			System.out.println("JWT INVALID: " + e.getMessage());
 			return false;
 		}
 	}
