@@ -25,5 +25,20 @@ export const bookingApi = {
     confirm: async (id) => {
         const response = await springInstance.patch(`/bookings/${id}/confirm`);
         return response.data;
+    },
+
+    getAll: async () => {
+        const response = await springInstance.get('/bookings');
+        return response.data;
+    },
+
+    cancel: async (id, reason = '') => {
+        const response = await springInstance.patch(`/bookings/${id}/cancel`, null, { params: { reason } });
+        return response.data;
+    },
+
+    delete: async (id) => {
+        const response = await springInstance.delete(`/bookings/${id}`);
+        return response.data;
     }
 };
