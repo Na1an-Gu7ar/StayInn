@@ -122,6 +122,7 @@ const Payment = () => {
                 }
             };
 
+            // @ts-ignore
             const paymentObject = new window.Razorpay(options);
             paymentObject.open();
 

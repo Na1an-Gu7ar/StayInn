@@ -179,7 +179,7 @@ const HotelDetails = () => {
                         autoHideDuration={6000}
                         onClose={() => setSnackbar({ ...snackbar, open: false })}
                     >
-                        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+                        <Alert severity={['error', 'warning', 'info', 'success'].includes(snackbar.severity) ? snackbar.severity : 'info'}>{snackbar.message}</Alert>
                     </Snackbar>
 
                     {/* TITLE HEADER */}
@@ -228,7 +228,7 @@ const HotelDetails = () => {
 
                     <Grid container spacing={4}>
                         {/* LEFT CONTENT */}
-                        <Grid item xs={12} md={8}>
+                        <Grid size={{ xs: 12, md: 8 }}>
                             {/* DESCRIPTION */}
                             <Box sx={{ mb: 5 }}>
                                 <Typography variant="h5" fontWeight={700} gutterBottom>About this place</Typography>
@@ -296,7 +296,7 @@ const HotelDetails = () => {
                         </Grid>
 
                         {/* RIGHT BOOKING SIDEBAR */}
-                        <Grid item xs={12} md={4}>
+                        <Grid size={{ xs: 12, md: 4 }}>
                             <Paper
                                 elevation={3}
                                 sx={{ p: 3, borderRadius: 4, position: 'sticky', top: 100, border: '1px solid rgba(0,0,0,0.08)' }}
@@ -312,7 +312,7 @@ const HotelDetails = () => {
                                 </Box>
 
                                 <Grid container spacing={2} sx={{ mb: 3 }}>
-                                    <Grid item xs={6}>
+                                    <Grid size={6}>
                                         <DatePicker
                                             label="Check-in"
                                             value={checkIn}
@@ -321,7 +321,7 @@ const HotelDetails = () => {
                                             slotProps={{ textField: { fullWidth: true } }}
                                         />
                                     </Grid>
-                                    <Grid item xs={6}>
+                                    <Grid size={6}>
                                         <DatePicker
                                             label="Check-out"
                                             value={checkOut}
@@ -331,13 +331,13 @@ const HotelDetails = () => {
                                             slotProps={{ textField: { fullWidth: true } }}
                                         />
                                     </Grid>
-                                    <Grid item xs={12}>
+                                    <Grid size={12}>
                                         <TextField
                                             fullWidth
                                             label="Guests"
                                             type="number"
                                             value={guests}
-                                            onChange={(e) => setGuests(e.target.value)}
+                                            onChange={(e) => setGuests(Number(e.target.value))}
                                             InputProps={{ inputProps: { min: 1 } }}
                                         />
                                     </Grid>

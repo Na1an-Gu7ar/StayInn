@@ -10,6 +10,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { hotelApi } from '../services/hotelApi';
+import type { AlertColor } from '@mui/material/Alert';
+
 
 const AdminDashboard = () => {
     const [villas, setVillas] = useState([]);
@@ -102,6 +104,8 @@ const AdminDashboard = () => {
             pricePerNight: parseFloat(formData.pricePerNight),
             imageUrls: formData.imageUrls.split('\n').filter(url => url.trim() !== '')
         };
+
+        // console.log(payload);
 
         try {
             if (isEdit) {
@@ -301,7 +305,7 @@ const AdminDashboard = () => {
 
                 {/* Global Snackbar */}
                 <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handeSnackbarClose}>
-                    <Alert onClose={handeSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+                    <Alert onClose={handeSnackbarClose} severity={['error', 'warning', 'info', 'success'].includes(snackbar.severity) ? snackbar.severity : 'success'} sx={{ width: '100%' }}>
                         {snackbar.message}
                     </Alert>
                 </Snackbar>

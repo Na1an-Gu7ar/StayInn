@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useSearchParams } from 'react-router-dom';
 import {
     Box, Container, Grid, Paper, Typography, Slider,
     FormControlLabel, Checkbox, FormGroup, Divider, Skeleton, Button, Alert
@@ -8,8 +9,10 @@ import HotelCard from '../components/HotelCard';
 import { hotelApi } from '../services/hotelApi'; // ADDED
 
 const ListingsPage = () => {
+    const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(true);
     const [priceRange, setPriceRange] = useState([50, 5000]);
+    const [allVillas, setAllVillas] = useState([]);
     const [villas, setVillas] = useState([]);
     const [error, setError] = useState(null);
 
@@ -20,8 +23,10 @@ const ListingsPage = () => {
                 const response = await hotelApi.getAll();
                 // API returns: { success: true, count: N, data: [...] }
                 if (response.success && Array.isArray(response.data)) {
+                    setAllVillas(response.data);
                     setVillas(response.data);
                 } else {
+                    setAllVillas([]);
                     setVillas([]);
                 }
             } catch (err) {
@@ -35,6 +40,27 @@ const ListingsPage = () => {
         fetchVillas();
     }, []);
 
+    useEffect(() => {
+        let filtered = [...allVillas];
+        const locationQuery = searchParams.get('location');
+
+        if (locationQuery) {
+            const lowerLoc = locationQuery.toLowerCase();
+            filtered = filtered.filter(villa => 
+                (villa.address && villa.address.toLowerCase().includes(lowerLoc)) ||
+                (villa.name && villa.name.toLowerCase().includes(lowerLoc))
+            );
+        }
+
+        // Apply price filter
+        filtered = filtered.filter(villa => {
+             const price = Number(villa.pricePerNight);
+             return price >= priceRange[0] && price <= priceRange[1];
+        });
+
+        setVillas(filtered);
+    }, [searchParams, allVillas, priceRange]);
+
     const handlePriceChange = (event, newValue) => {
         setPriceRange(newValue);
     };
@@ -45,7 +71,7 @@ const ListingsPage = () => {
                 <Grid container spacing={4}>
 
                     {/* FILTER SIDEBAR */}
-                    <Grid item xs={12} md={3}>
+                    <Grid size={{ xs: 12, md: 3 }}>
                         <Paper
                             elevation={0}
                             sx={{
@@ -110,7 +136,7 @@ const ListingsPage = () => {
                     </Grid>
 
                     {/* LISTINGS GRID */}
-                    <Grid item xs={12} md={9}>
+                    <Grid size={{ xs: 12, md: 9 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
                             <Typography variant="h4" fontWeight={700}>
                                 Recommended Places

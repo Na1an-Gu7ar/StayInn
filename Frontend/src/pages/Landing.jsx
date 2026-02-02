@@ -7,10 +7,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import SearchIcon from "@mui/icons-material/Search";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import EventIcon from '@mui/icons-material/Event';
-import PersonIcon from '@mui/icons-material/Person';
 import { motion } from "framer-motion";
 
 const Swipper = lazy(() => import("../components/Swipper"));
@@ -26,6 +23,18 @@ const destinations = [
 
 const Landing = () => {
     const navigate = useNavigate();
+    const [searchLocation, setSearchLocation] = useState('');
+    const [checkIn, setCheckIn] = useState(null);
+    const [checkOut, setCheckOut] = useState(null);
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        if (searchLocation) params.append('location', searchLocation);
+        if (checkIn) params.append('checkIn', checkIn.toISOString());
+        if (checkOut) params.append('checkOut', checkOut.toISOString());
+        navigate(`/listings?${params.toString()}`);
+    };
+
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -112,6 +121,8 @@ const Landing = () => {
                                     fullWidth
                                     placeholder="Where are you going?"
                                     variant="standard"
+                                    value={searchLocation}
+                                    onChange={(e) => setSearchLocation(e.target.value)}
                                     InputProps={{ disableUnderline: true, style: { fontSize: '1.1rem' } }}
                                 />
                             </Box>
@@ -121,30 +132,22 @@ const Landing = () => {
                             <Box sx={{ display: 'flex', gap: 0, flex: 2, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
                                 <DatePicker
                                     label="Check-in"
+                                    value={checkIn}
+                                    onChange={(newValue) => setCheckIn(newValue)}
                                     slotProps={{ textField: { variant: 'standard', InputProps: { disableUnderline: true } } }}
                                 />
                                 <DatePicker
                                     label="Check-out"
+                                    value={checkOut}
+                                    onChange={(newValue) => setCheckOut(newValue)}
                                     slotProps={{ textField: { variant: 'standard', InputProps: { disableUnderline: true } } }}
-                                />
-                            </Box>
-
-                            <Box sx={{ width: '1px', height: '40px', bgcolor: 'divider', display: { xs: 'none', md: 'block' } }} />
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, width: '100%', px: 2 }}>
-                                <PersonIcon color="action" sx={{ mr: 1 }} />
-                                <TextField
-                                    placeholder="2 adults · 0 children"
-                                    variant="standard"
-                                    InputProps={{ disableUnderline: true }}
-                                    fullWidth
                                 />
                             </Box>
 
                             <Button
                                 variant="contained"
                                 size="large"
-                                onClick={() => navigate('/listings')}
+                                onClick={handleSearch}
                                 sx={{
                                     borderRadius: '24px',
                                     px: 4,
