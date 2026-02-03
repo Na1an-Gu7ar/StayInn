@@ -35,6 +35,5 @@ build/
 
 # Ignore all Spring Boot config files
 src/main/resources/application*.properties
-
-
-
+pom.xml
+.gitignore
