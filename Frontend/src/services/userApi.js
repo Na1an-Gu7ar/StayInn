@@ -11,8 +11,8 @@ export const userApi = {
         return response.data;
     },
 
-    changePassword: async (id, data) => {
-        const response = await springInstance.post(`/users/${id}/change-password`, data);
+    changePassword: async (data) => {
+        const response = await springInstance.post(`/users/change_password`, data);
         return response.data;
     },
 

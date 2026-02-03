@@ -9,6 +9,7 @@ import { Box } from "@mui/material"
 import { AuthProvider } from "./context/AuthContext"
 import PageLoader from "./components/PageLoader"
 import ProtectedRoute from "./components/ProtectedRoute"
+import ResetPassword from "./pages/ResetPassword"
 
 const Landing = lazy(() => import("./pages/Landing"))
 const HotelDetails = lazy(() => import("./pages/HotelDetails"))
@@ -24,6 +25,7 @@ const AnimatedRoutes = () => {
       <Routes location={location} key={location.pathname}>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/reset_password" element={<ResetPassword />} />
 
         <Route path="/payment/:bookingId" element={
           <ProtectedRoute allowedRoles={['USER', 'ADMIN']}>

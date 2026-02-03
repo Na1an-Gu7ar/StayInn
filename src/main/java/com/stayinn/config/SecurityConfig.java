@@ -41,7 +41,7 @@ public class SecurityConfig {
 				// 4️⃣ Authorization rules
 				.authorizeHttpRequests(auth -> auth
 						// Public APIs
-//						.requestMatchers("/api/**").permitAll()
+						.requestMatchers("/api/users/change_password").permitAll()
 
 						// Everything else needs JWT
 						.anyRequest().authenticated())

@@ -129,6 +129,12 @@ export default function Login() {
                                 InputProps={{ sx: { borderRadius: 2 } }}
                             />
 
+                            <Box sx={{ textAlign: 'right', mt: 1 }}>
+                                <Link to="/reset_password" style={{ color: theme.palette.primary.main, fontWeight: 600, textDecoration: 'none' }}>
+                                    Forgot Password?
+                                </Link>
+                            </Box>
+
                             <Button
                                 type="submit"
                                 fullWidth

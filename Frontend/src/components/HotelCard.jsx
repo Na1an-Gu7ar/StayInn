@@ -63,12 +63,13 @@ const HotelCard = ({ hotel }) => {
                     >
                         {isLiked ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
                     </IconButton>
-                    <Chip
+
+                    {hotel.rating >= 4 && <Chip
                         label="Top Rated"
                         color="secondary"
                         size="small"
                         sx={{ position: 'absolute', top: 10, left: 10, fontWeight: 600 }}
-                    />
+                    />}
                 </Box>
 
                 <CardContent sx={{ pb: 1 }}>
@@ -99,15 +100,12 @@ const HotelCard = ({ hotel }) => {
 
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
                         <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ textDecoration: 'line-through' }}>
-                                ${oldPrice}
-                            </Typography>
                             <Typography variant="h5" color="primary.main" fontWeight={700}>
-                                ${price} <Typography component="span" variant="body2" color="text.secondary">/ night</Typography>
+                                ₹{price} <Typography component="span" variant="body2" color="text.secondary">/ night</Typography>
                             </Typography>
                         </Box>
 
-                        {isAdmin ? (
+                        {/* {isAdmin ? (
                             <Box sx={{ display: 'flex', gap: 1 }}>
                                 <Button variant="outlined" color="info" size="small" startIcon={<EditIcon />}>
                                     Edit
@@ -117,14 +115,14 @@ const HotelCard = ({ hotel }) => {
                                 </Button>
                             </Box>
                         ) : (
-                            <Button
-                                variant="outlined"
-                                sx={{ borderRadius: 8 }}
-                                onClick={() => navigate(`/listings/${id}`)}
-                            >
-                                View Deal
-                            </Button>
-                        )}
+                        )} */}
+                        <Button
+                            variant="outlined"
+                            sx={{ borderRadius: 8 }}
+                            onClick={() => navigate(`/listings/${id}`)}
+                        >
+                            View Deal
+                        </Button>
                     </Box>
                 </CardContent>
             </Card>

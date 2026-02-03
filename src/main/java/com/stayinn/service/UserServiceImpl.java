@@ -129,27 +129,15 @@ public class UserServiceImpl implements UserService {
     }
     
     @Override
-    public void changePassword(Long id, PasswordChangeDTO passwordChangeDTO) {
-        log.info("Changing password for user ID: {}", id);
-        
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
-        
-        // Verify current password
-        if (!passwordEncoder.matches(passwordChangeDTO.getCurrentPassword(), user.getPassword())) {
-            throw new RuntimeException("Current password is incorrect");
-        }
-        
-        // Verify new password confirmation
-        if (!passwordChangeDTO.getNewPassword().equals(passwordChangeDTO.getConfirmPassword())) {
-            throw new RuntimeException("New passwords do not match");
-        }
+    public void changePassword(PasswordChangeDTO passwordChangeDTO) {
+        User user = userRepository.findByEmail(passwordChangeDTO.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + passwordChangeDTO.getEmail()));
         
         // Update password
         user.setPassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
         userRepository.save(user);
         
-        log.info("Password changed successfully for user ID: {}", id);
+        log.info("Password changed successfully for user with email: ", passwordChangeDTO.getEmail());
     }
     
     @Override

@@ -143,14 +143,13 @@ public class UserController {
     
     /**
      * Change password
-     * POST /api/users/{id}/change-password
+     * POST /api/users/change_password
      */
-    @PostMapping("/{id}/change-password")
+    @PostMapping("/change_password")
     public ResponseEntity<Map<String, Object>> changePassword(
-            @PathVariable Long id,
             @Valid @RequestBody PasswordChangeDTO passwordChangeDTO) {
         try {
-            userService.changePassword(id, passwordChangeDTO);
+            userService.changePassword(passwordChangeDTO);
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Password changed successfully");

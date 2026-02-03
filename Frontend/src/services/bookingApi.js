@@ -22,6 +22,11 @@ export const bookingApi = {
         return response.data;
     },
 
+    getByVilla: async (villaId) => {
+        const response = await springInstance.get(`/bookings/villa/${villaId}`);
+        return response.data;
+    },
+
     confirm: async (id) => {
         const response = await springInstance.patch(`/bookings/${id}/confirm`);
         return response.data;

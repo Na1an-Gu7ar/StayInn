@@ -25,7 +25,7 @@ public interface UserService {
     UserResponseDTO updateUser(Long id, UserUpdateDTO updateDTO);
     
     
-    void changePassword(Long id, PasswordChangeDTO passwordChangeDTO);
+    void changePassword(PasswordChangeDTO passwordChangeDTO);
     
     
     void deactivateUser(Long id);

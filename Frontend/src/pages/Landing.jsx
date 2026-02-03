@@ -28,6 +28,15 @@ const Landing = () => {
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const [location, setLocation] = useState('');
+
+    const handleSearch = () => {
+        if (location.trim()) {
+            navigate(`/listings?location=${encodeURIComponent(location)}`);
+        } else {
+            navigate('/listings');
+        }
+    };
 
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -106,45 +115,23 @@ const Landing = () => {
                                 border: '1px solid rgba(0,0,0,0.08)'
                             }}
                         >
-                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 2, width: '100%', px: 2 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, width: '100%', px: 2 }}>
                                 <LocationOnIcon color="action" sx={{ mr: 1 }} />
                                 <TextField
                                     fullWidth
                                     placeholder="Where are you going?"
                                     variant="standard"
+                                    value={location}
+                                    onChange={(e) => setLocation(e.target.value)}
                                     InputProps={{ disableUnderline: true, style: { fontSize: '1.1rem' } }}
-                                />
-                            </Box>
-
-                            <Box sx={{ width: '1px', height: '40px', bgcolor: 'divider', display: { xs: 'none', md: 'block' } }} />
-
-                            <Box sx={{ display: 'flex', gap: 0, flex: 2, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
-                                <DatePicker
-                                    label="Check-in"
-                                    slotProps={{ textField: { variant: 'standard', InputProps: { disableUnderline: true } } }}
-                                />
-                                <DatePicker
-                                    label="Check-out"
-                                    slotProps={{ textField: { variant: 'standard', InputProps: { disableUnderline: true } } }}
-                                />
-                            </Box>
-
-                            <Box sx={{ width: '1px', height: '40px', bgcolor: 'divider', display: { xs: 'none', md: 'block' } }} />
-
-                            <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, width: '100%', px: 2 }}>
-                                <PersonIcon color="action" sx={{ mr: 1 }} />
-                                <TextField
-                                    placeholder="2 adults · 0 children"
-                                    variant="standard"
-                                    InputProps={{ disableUnderline: true }}
-                                    fullWidth
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                                 />
                             </Box>
 
                             <Button
                                 variant="contained"
                                 size="large"
-                                onClick={() => navigate('/listings')}
+                                onClick={handleSearch}
                                 sx={{
                                     borderRadius: '24px',
                                     px: 4,
