@@ -35,5 +35,8 @@ public class VillaResponseDTO {
         this.imageUrls = imageUrls;
         this.averageRating = averageRating;
         this.totalRatings = totalRatings;
+//        this.createdAt = createdAt != null ? LocalDateTime.parse(createdAt) : null;
+//        this.updatedAt = updatedAt != null ? LocalDateTime.parse(updatedAt) : null;
     }
+
 }

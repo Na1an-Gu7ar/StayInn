@@ -7,10 +7,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import SearchIcon from "@mui/icons-material/Search";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
-import EventIcon from '@mui/icons-material/Event';
-import PersonIcon from '@mui/icons-material/Person';
 import { motion } from "framer-motion";
 
 const Swipper = lazy(() => import("../components/Swipper"));
@@ -26,6 +23,18 @@ const destinations = [
 
 const Landing = () => {
     const navigate = useNavigate();
+    const [searchLocation, setSearchLocation] = useState('');
+    const [checkIn, setCheckIn] = useState(null);
+    const [checkOut, setCheckOut] = useState(null);
+
+    const handleSearch = () => {
+        const params = new URLSearchParams();
+        if (searchLocation) params.append('location', searchLocation);
+        if (checkIn) params.append('checkIn', checkIn.toISOString());
+        if (checkOut) params.append('checkOut', checkOut.toISOString());
+        navigate(`/listings?${params.toString()}`);
+    };
+
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [location, setLocation] = useState('');
