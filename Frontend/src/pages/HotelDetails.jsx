@@ -208,7 +208,9 @@ const HotelDetails = () => {
                         autoHideDuration={6000}
                         onClose={() => setSnackbar({ ...snackbar, open: false })}
                     >
-                        <Alert severity={['error', 'warning', 'info', 'success'].includes(snackbar.severity) ? snackbar.severity : 'info'}>{snackbar.message}</Alert>
+                        <Alert
+                            // @ts-ignore
+                            severity={['error', 'warning', 'info', 'success'].includes(snackbar.severity) ? snackbar.severity : 'info'}>{snackbar.message}</Alert>
                     </Snackbar>
 
                     {/* TITLE HEADER */}

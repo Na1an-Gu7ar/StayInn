@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useLocation } from "react-router-dom"; // Add useLocation
+import { useLocation, useSearchParams } from "react-router-dom"; // Add useLocation
 import {
-    Box, Container, Grid, Paper, Typography, Slider,
+    Box, Container, Paper, Typography, Slider,
     FormControlLabel, Checkbox, FormGroup, Divider, Skeleton, Button, Alert
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 import HotelCard from '../components/HotelCard';
 import { hotelApi } from '../services/hotelApi';
 
@@ -12,6 +13,7 @@ const ListingsPage = () => {
     const [searchParams] = useSearchParams();
     const [loading, setLoading] = useState(true);
     const [priceRange, setPriceRange] = useState([50, 5000]);
+    const [selectedRatings, setSelectedRatings] = useState({ 5: false, 4: false, 3: false }); // Rating state
     const [allVillas, setAllVillas] = useState([]);
     const [villas, setVillas] = useState([]);
     const [error, setError] = useState(null);
@@ -33,11 +35,9 @@ const ListingsPage = () => {
                     response = await hotelApi.getAll();
                 }
 
-                // API returns: { success: true, count: N, data: [...] }
-                // API returns: { success: true, count: N, data: [...] }
                 if (response.success && Array.isArray(response.data)) {
                     setAllVillas(response.data);
-                    setVillas(response.data);
+                    setVillas(response.data); // Initialize filtered set
                 } else {
                     setAllVillas([]);
                     setVillas([]);
@@ -53,29 +53,54 @@ const ListingsPage = () => {
         fetchVillas();
     }, [location.search]);
 
+    // FILTER LOGIC
     useEffect(() => {
         let filtered = [...allVillas];
         const locationQuery = searchParams.get('location');
 
+        // 1. Location Filter (Redundant if handled by API, but good for client-side refinement)
         if (locationQuery) {
             const lowerLoc = locationQuery.toLowerCase();
-            filtered = filtered.filter(villa => 
+            filtered = filtered.filter(villa =>
                 (villa.address && villa.address.toLowerCase().includes(lowerLoc)) ||
                 (villa.name && villa.name.toLowerCase().includes(lowerLoc))
             );
         }
 
-        // Apply price filter
+        // 2. Price Filter
         filtered = filtered.filter(villa => {
-             const price = Number(villa.pricePerNight);
-             return price >= priceRange[0] && price <= priceRange[1];
+            const price = Number(villa.pricePerNight);
+            return price >= priceRange[0] && price <= priceRange[1];
         });
 
+        // 3. Rating Filter
+        // Check if any rating box is checked
+        const activeRatings = Object.keys(selectedRatings).filter(r => selectedRatings[r]).map(Number);
+
+        if (activeRatings.length > 0) {
+            filtered = filtered.filter(villa => {
+                const rating = Math.floor(villa.averageRating || 0);
+                return activeRatings.includes(rating) || (activeRatings.includes(5) && rating >= 5);
+            });
+        }
+
         setVillas(filtered);
-    }, [searchParams, allVillas, priceRange]);
+    }, [searchParams, allVillas, priceRange, selectedRatings]);
 
     const handlePriceChange = (event, newValue) => {
         setPriceRange(newValue);
+    };
+
+    const handleRatingChange = (event) => {
+        setSelectedRatings({
+            ...selectedRatings,
+            [event.target.name]: event.target.checked,
+        });
+    };
+
+    const handleReset = () => {
+        setPriceRange([50, 5000]);
+        setSelectedRatings({ 5: false, 4: false, 3: false });
     };
 
     return (
@@ -83,6 +108,7 @@ const ListingsPage = () => {
             <Container maxWidth="xl">
                 <Grid container spacing={4}>
 
+                    {/* FILTER SIDEBAR */}
                     {/* FILTER SIDEBAR */}
                     <Grid size={{ xs: 12, md: 3 }}>
                         <Paper
@@ -99,7 +125,7 @@ const ListingsPage = () => {
                         >
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                                 <Typography variant="h6" fontWeight={700}>Filters</Typography>
-                                <Button size="small" sx={{ textTransform: 'none' }}>Reset</Button>
+                                <Button size="small" onClick={handleReset} sx={{ textTransform: 'none' }}>Reset</Button>
                             </Box>
 
                             <Divider sx={{ mb: 3 }} />
@@ -111,7 +137,7 @@ const ListingsPage = () => {
                                 onChange={handlePriceChange}
                                 valueLabelDisplay="auto"
                                 min={50}
-                                max={1000}
+                                max={5000}
                                 sx={{ mb: 3 }}
                             />
                             <Typography variant="body2" color="text.secondary" mb={3}>
@@ -120,21 +146,31 @@ const ListingsPage = () => {
 
                             <Divider sx={{ mb: 3 }} />
 
-                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>Popular Filters</Typography>
+                            {/* RATINGS FILTER */}
+                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>Property Rating</Typography>
                             <FormGroup>
-                                <FormControlLabel control={<Checkbox defaultChecked />} label="Breakfast Included" />
-                                <FormControlLabel control={<Checkbox />} label="Pool" />
-                                <FormControlLabel control={<Checkbox />} label="Free Cancellation" />
-                                <FormControlLabel control={<Checkbox />} label="Pet Friendly" />
+                                <FormControlLabel
+                                    control={<Checkbox checked={selectedRatings[5]} onChange={handleRatingChange} name="5" />}
+                                    label="5 Stars & Up"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox checked={selectedRatings[4]} onChange={handleRatingChange} name="4" />}
+                                    label="4 Stars & Up"
+                                />
+                                <FormControlLabel
+                                    control={<Checkbox checked={selectedRatings[3]} onChange={handleRatingChange} name="3" />}
+                                    label="3 Stars & Up"
+                                />
                             </FormGroup>
 
                             <Divider sx={{ my: 3 }} />
 
-                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>Property Rating</Typography>
+                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>Popular Filters</Typography>
                             <FormGroup>
-                                <FormControlLabel control={<Checkbox defaultChecked />} label="5 Stars" />
-                                <FormControlLabel control={<Checkbox />} label="4 Stars" />
-                                <FormControlLabel control={<Checkbox />} label="3 Stars" />
+                                <FormControlLabel control={<Checkbox />} label="Breakfast Included" />
+                                <FormControlLabel control={<Checkbox />} label="Pool" />
+                                <FormControlLabel control={<Checkbox />} label="Free Cancellation" />
+                                <FormControlLabel control={<Checkbox />} label="Pet Friendly" />
                             </FormGroup>
                         </Paper>
 
@@ -148,6 +184,7 @@ const ListingsPage = () => {
                         </Button>
                     </Grid>
 
+                    {/* LISTINGS GRID */}
                     {/* LISTINGS GRID */}
                     <Grid size={{ xs: 12, md: 9 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -217,7 +254,7 @@ const ListingsPage = () => {
                     </Grid>
                 </Grid>
             </Container>
-        </Box>
+        </Box >
     );
 };
 

@@ -10,8 +10,9 @@ export default function SignUp() {
     const [form, setForm] = useState({ name: '', email: '', mobile: '', password: '', role: 'normal_user' });
     const theme = useTheme();
     // Use register from context
-    const { register } = useAuth(); // ADDED
+    const { register } = useAuth();
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 

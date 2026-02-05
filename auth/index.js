@@ -2,12 +2,11 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
+dotenv.config();
 import authRoute from "./routes/authRoute.js";
 import { Router } from "express";
 import { protect } from "./middleware/authMiddleware.js";
 import { authorizeRoles } from "./middleware/roleMiddleware.js";
-
-dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;

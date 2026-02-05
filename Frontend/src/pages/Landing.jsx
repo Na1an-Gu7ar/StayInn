@@ -27,13 +27,13 @@ const Landing = () => {
     const [checkIn, setCheckIn] = useState(null);
     const [checkOut, setCheckOut] = useState(null);
 
-    const handleSearch = () => {
-        const params = new URLSearchParams();
-        if (searchLocation) params.append('location', searchLocation);
-        if (checkIn) params.append('checkIn', checkIn.toISOString());
-        if (checkOut) params.append('checkOut', checkOut.toISOString());
-        navigate(`/listings?${params.toString()}`);
-    };
+    // const handleSearch = () => {
+    //     const params = new URLSearchParams();
+    //     if (searchLocation) params.append('location', searchLocation);
+    //     if (checkIn) params.append('checkIn', checkIn.toISOString());
+    //     if (checkOut) params.append('checkOut', checkOut.toISOString());
+    //     navigate(`/listings?${params.toString()}`);
+    // };
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
