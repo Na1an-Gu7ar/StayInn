@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 // URLs for Microservices
-export const SPRING_API_URL = "http://localhost:8080/api";
-export const AUTH_API_URL = "http://localhost:5000/api";
+export const SPRING_API_URL = "https://stayinn-springboot.onrender.com/api";
+export const AUTH_API_URL = "https://stayinn-aie6.onrender.com/api";
 
 // Create Axios Instance for Spring Boot (Core/Business Logic)
 const springInstance = axios.create({
